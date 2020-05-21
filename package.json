@@ -15,5 +15,8 @@
   "bugs": {
     "url": "https://github.com/tamakiii-sandbox/javascript-download-files/issues"
   },
-  "homepage": "https://github.com/tamakiii-sandbox/javascript-download-files#readme"
+  "homepage": "https://github.com/tamakiii-sandbox/javascript-download-files#readme",
+  "devDependencies": {
+    "http-server": "^0.12.3"
+  }
 }
