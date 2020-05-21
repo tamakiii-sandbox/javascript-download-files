@@ -1,0 +1,95 @@
+<html>
+  <head>
+    <title>javascript-download-files</title>
+    <meta charset="utf-8" />
+  </head>
+  <body>
+    <main></main>
+    <input type="button" value="download" id="download" />
+    <script>
+      window.addEventListener('DOMContentLoaded', event => {
+        document.querySelector('#download').addEventListener('click', async e => {
+          const buildCsvBlob = (rows, separator = "\t") => {
+            const data = rows.map(row => row.join(separator)).join('\r\n')
+            const bom  = new Uint8Array([0xEF, 0xBB, 0xBF])
+            return new Blob([bom, data], {type: 'text/csv'})
+          }
+
+          const download = (blob, filename) => {
+            const url = window.URL.createObjectURL(blob)
+            const a = document.createElement('a')
+            document.body.appendChild(a)
+            a.download = filename
+            a.href = url
+            a.click()
+            a.remove()
+            window.URL.revokeObjectURL(url)
+          }
+
+          const timeout = 10000
+          const url = new URL(location.href)
+          url.pathname = url.pathname.replace('csv.html', 'table.html')
+
+          const iframe = document.createElement('iframe')
+          iframe.src = url.toString()
+
+          const promise = new Promise((resolve, reject) => {
+            let resolved = false;
+            iframe.addEventListener('load', event => {
+              try {
+                resolved = true
+                resolve({
+                  ok: true,
+                  window: event.currentTarget.contentWindow
+                })
+              } catch (error) {
+                reject(error)
+              }
+            })
+            setTimeout(() => resolved || reject({ ok: false, error: new Error('Timeout') }), timeout)
+          })
+
+          document.body.appendChild(iframe)
+
+          const result = await promise
+
+          if (result.ok) {
+            const table = result.window.document.querySelector('table#data')
+            const data = Array.from(table.querySelectorAll('tbody tr')).map(row => ({
+              id: row.querySelector('td:nth-child(1)')?.textContent,
+              first_name: row.querySelector('td:nth-child(2)')?.textContent,
+              last_name: row.querySelector('td:nth-child(3)')?.textContent,
+              email: row.querySelector('td:nth-child(4)')?.textContent,
+              gender: row.querySelector('td:nth-child(5)')?.textContent,
+              ip_address: row.querySelector('td:nth-child(6)')?.textContent,
+            }))
+
+            const blob = buildCsvBlob(
+              [[
+                'id',
+                'first_name',
+                'last_name',
+                'email',
+                'gender',
+                'ip_address'
+              ]].concat(
+                data.map(row => ([
+                  row.id,
+                  row.first_name,
+                  row.last_name,
+                  row.email,
+                  row.gender,
+                  row.ip_address,
+                ]))
+              )
+            )
+
+            download(blob, 'test.csv')
+          }
+
+          iframe.remove()
+        })
+      })
+    </script>
+  </body>
+</html>
