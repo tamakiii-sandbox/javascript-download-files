@@ -1,0 +1,56 @@
+<html>
+  <head>
+    <title>javascript-download-files</title>
+    <meta charset="utf-8" />
+  </head>
+  <body>
+    <main></main>
+    <input type="button" value="download" id="download" />
+    <script>
+      window.addEventListener('DOMContentLoaded', event => {
+        // Generate checkboxes
+        const main = document.querySelector('main');
+        const files = [
+          '/files/01.png',
+          '/files/02.png',
+          '/files/03.png',
+          '/files/04.png',
+          '/files/05.png',
+          '/files/06.png',
+          '/files/07.png',
+          '/files/08.png',
+        ];
+
+        files.forEach(file => {
+          const section = document.createElement('section');
+          const checkbox = document.createElement('input');
+          const span = document.createElement('span');
+          checkbox.type = 'checkbox';
+          checkbox.value = file;
+          span.textContent = file;
+          section.appendChild(checkbox);
+          section.appendChild(span);
+          main.appendChild(section);
+        })
+        // end
+
+        document.querySelector('#download').addEventListener('click', e => {
+          const selected = document.querySelectorAll('main section input[type="checkbox"]:checked');
+          selected.forEach(element => {
+            const url = new URL(location.href);
+            url.pathname = element.value;
+            console.log(url);
+
+            const a = document.createElement('a');
+            document.body.appendChild(a);
+            a.download = url.pathname; //=> _files_01.png
+            a.href = url;
+            a.click();
+            a.remove();
+            // URL.revokeObjectURL(url);
+          });
+        });
+      })
+    </script>
+  </body>
+</html>
